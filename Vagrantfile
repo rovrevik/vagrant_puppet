@@ -12,6 +12,21 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # Every Vagrant virtual environment requires a box to build off of.
   config.vm.box = "base"
 
+  # How and by whom is the default box created?
+  # The default box used to be "precise" and it was at "http://files.vagrantup.com/precise32.box". Not so anymore.
+  # It is apparently maintained by mitchellh implied here: https://github.com/mitchellh/vagrant/wiki/Available-Vagrant-Boxes
+  # The big list of boxes is here: http://www.vagrantbox.es/
+
+  # Useful github repos for all this stuff.
+  # https://github.com/hashicorp
+  # https://github.com/mitchellh
+  # https://github.com/puppetlabs/puppet-vagrant-boxes
+
+  # trying out puppets boxes. I think this is the way to go because they provide veewee definitions.
+  # at https://github.com/puppetlabs/puppet-vagrant-boxes
+  config.vm.box = "ubuntu-server-12042-x64-vbox4210"
+  config.vm.box_url = "http://puppet-vagrant-boxes.puppetlabs.com/ubuntu-server-12042-x64-vbox4210.box"
+
   # The url from where the 'config.vm.box' box will be fetched if it
   # doesn't already exist on the user's system.
   # config.vm.box_url = "http://domain.com/path/to/above.box"
