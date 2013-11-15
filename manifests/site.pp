@@ -32,7 +32,7 @@ exec { "apt-get update":
 # http://www.augeas.net/
 
 # $augeas_packages=["augeas-tools", "libaugeas-dev", "libaugeas-ruby"]
-$augeas_packages=["augeas-tools", "libaugeas-ruby"]
+$augeas_packages=["augeas-tools"]
 package { $augeas_packages:
   ensure  => present,
   require => Exec["apt-get update"],
@@ -53,6 +53,5 @@ augeas { "bootlogd_11_15_2013":
   ],
   require => [
     Package["augeas-tools"],
-    Package["libaugeas-ruby"],
   ]
 }
