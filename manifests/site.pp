@@ -31,7 +31,7 @@ exec { "apt-get update":
 # http://docs.puppetlabs.com/references/latest/type.html#augeas
 # http://www.augeas.net/
 
-# $augeas_packages=["augeas-tools", "libaugeas-dev", "libaugeas-ruby", "libaugeas-ruby1.8"]
+# $augeas_packages=["augeas-tools", "libaugeas-dev", "libaugeas-ruby"]
 $augeas_packages=["augeas-tools", "libaugeas-ruby"]
 package { $augeas_packages:
   ensure  => present,
