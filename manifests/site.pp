@@ -31,8 +31,7 @@ exec { "apt-get update":
 # http://docs.puppetlabs.com/references/latest/type.html#augeas
 # http://www.augeas.net/
 
-# $augeas_packages=["augeas-tools", "libaugeas-dev", "libaugeas-ruby"]
-$augeas_packages=["augeas-tools"]
+$augeas_packages=["augeas-tools", "libaugeas-dev", "pkg-config"]
 package { $augeas_packages:
   ensure  => present,
   require => Exec["apt-get update"],
@@ -43,6 +42,16 @@ package { $augeas_packages:
 # dpkg --get-selections | grep augeas
 # dpkg-query -L libaugeas-ruby1.8
 
+# Add augeas support via gem instead for the native package manager. 
+package { 'ruby-augeas':
+  ensure  => present,
+  provider => 'gem',
+  require => [
+    Package["libaugeas-dev"], # Dependency to address "augeas-devel not installed (RuntimeError)
+    Package["pkg-config"], # Dependency to address build "Failed to build gem native extension."
+  ]
+}
+
 # Just add a comment to any old shellvars file. Fails with Error: Could not find a suitable provider for augeas.
 # This does not work because the bindings are not visible to the ruby used to execute puppet on the guest.
 augeas { "bootlogd_11_15_2013":
@@ -52,6 +61,6 @@ augeas { "bootlogd_11_15_2013":
       "set /files/etc/default/bootlogd/#comment[last()+1] 'change 11_15_2013'",
   ],
   require => [
-    Package["augeas-tools"],
+    Package["ruby-augeas"],
   ]
 }
