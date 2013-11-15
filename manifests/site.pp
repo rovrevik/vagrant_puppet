@@ -27,3 +27,18 @@
 exec { "apt-get update":
   path => "/usr/bin",
 }
+
+# Augeas dependencies installation and minimal use.
+# http://docs.puppetlabs.com/references/latest/type.html#augeas
+# http://www.augeas.net/
+
+$augeas_packages=["augeas-tools", "libaugeas-dev", "libaugeas-ruby", "libaugeas-ruby1.8"]
+package { $augeas_packages:
+  ensure  => present,
+  require => Exec["apt-get update"],
+}
+
+# Where do the ruby bindings for augeas get installed?
+# See that stuff is installed into /usr/lib/ruby/1.8/i686-linux/_augeas.so and not in /opt/vagrant_ruby
+# dpkg --get-selections | grep -v deinstall | grep augeas
+# dpkg-query -L libaugeas-ruby1.8
