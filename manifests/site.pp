@@ -29,11 +29,11 @@ exec { "apt-get update":
 
 # Just add a comment to any old shellvars file. Fails with Error: Could not find a suitable provider for augeas.
 # This does not work because the bindings are not visible to the ruby used to execute puppet on the guest.
-augeas { "bootlogd_11_15_2013":
-  context => "/files/etc/default/bootlogd",
-  onlyif => "match #comment[. = 'change 11_15_2013'] size == 0",
+augeas { "hosts_11_15_2013":
+  context => "/files/etc/hosts",
+  onlyif => "match #comment[. = 'change hosts_11_15_2013'] size == 0",
   changes => [
-      "set /files/etc/default/bootlogd/#comment[last()+1] 'change 11_15_2013'",
+      "set /files/etc/hosts/#comment[last()+1] 'change hosts_11_15_2013'",
   ],
   # require => Package["ruby-augeas"],
   # Requirements for augueas are satisfied in the augeas_requirements.pp manifest
