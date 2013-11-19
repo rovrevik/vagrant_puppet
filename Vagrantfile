@@ -31,6 +31,11 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # doesn't already exist on the user's system.
   # config.vm.box_url = "http://domain.com/path/to/above.box"
 
+  # What is the default networking configuration when nothing is explicitly configured?
+  # The default network configuration for virtual box is NAT. Thus it is not accessible from the host.
+  # What is the simplest way to expose the guest to the host?
+  # How do you dynamically expose the guest to the host?
+
   # Create a forwarded port mapping which allows access to a specific port
   # within the machine from a port on the host machine. In the example below,
   # accessing "localhost:8080" will access port 80 on the guest machine.
