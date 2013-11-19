@@ -39,3 +39,21 @@ augeas { "hosts_11_15_2013":
   # require => Package["ruby-augeas"],
   # Requirements for augueas are satisfied in the augeas_requirements.pp manifest
 }
+
+package { "openjdk-6-jdk":
+  ensure  => present,
+  require => Exec["apt-get update"],
+}
+
+# What packages have tomcat and admin: apt-cache search tomcat admin
+# Where is tomcat7 installed/What file locations (-L) are installed to for tomcat7? dpkg-query -L tomcat7
+package { "tomcat7":
+  ensure  => present,
+  require => Package["openjdk-6-jdk"],
+}
+
+# The admin web applications are installed with context files in /etc/tomcat7/Catalina/localhost
+package { "tomcat7-admin":
+  ensure  => present,
+  require => Package["tomcat7"],
+}
