@@ -12,6 +12,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # Every Vagrant virtual environment requires a box to build off of.
   config.vm.box = "base"
 
+  # rovrevik comments:
   # How and by whom is the default box created?
   # The default box used to be "precise" and it was at "http://files.vagrantup.com/precise32.box". Not so anymore.
   # It is apparently maintained by mitchellh implied here: https://github.com/mitchellh/vagrant/wiki/Available-Vagrant-Boxes
@@ -31,9 +32,10 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # doesn't already exist on the user's system.
   # config.vm.box_url = "http://domain.com/path/to/above.box"
 
+  # rovrevik comments:
   # What is the default networking configuration when nothing is explicitly configured?
   # The default network configuration for virtual box is NAT. Thus it is not accessible from the host.
-  # What is the simplest way to expose the guest to the host?
+  # What is the simplest way to expose the guest to the host? Use config.vm.network :private_network, ip: xxx.
   # How do you dynamically expose the guest to the host?
 
   # Create a forwarded port mapping which allows access to a specific port
@@ -43,7 +45,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   # Create a private network, which allows host-only access to the machine
   # using a specific IP.
-  # config.vm.network :private_network, ip: "192.168.33.10"
+  config.vm.network :private_network, ip: "192.168.33.10"
 
   # Create a public network, which generally matched to bridged network.
   # Bridged networks make the machine appear as another physical device on
