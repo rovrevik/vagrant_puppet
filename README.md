@@ -21,3 +21,4 @@ TODO:
 - [ ] Configure Tomcat ports in server.xml
 - [ ] Decide on sensible strategy to expose web application directories on the host to the guest
 - [ ] Add supplemental editor packages. vim, mc what else?
+- [ ] Add tomcat service restart after tomcat-users.xml change
