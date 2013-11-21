@@ -52,8 +52,72 @@ package { "tomcat7":
   require => Package["openjdk-6-jdk"],
 }
 
-# The admin web applications are installed with context files in /etc/tomcat7/Catalina/localhost
+# The admin web applications (manager and host-manager) are installed with context files in /etc/tomcat7/Catalina/localhost
+# dpkg-query -L tomcat7-admin | grep /manager.xml
+# dpkg-query -L tomcat7-admin | grep /host-manager.xml
 package { "tomcat7-admin":
   ensure  => present,
   require => Package["tomcat7"],
 }
+
+# enable access to admin gui applications.
+# Accessing /manager and /host-manager recommend changes to tomcat-users.xml.
+# Documentation included with the tomcat packages recommend similar changes. 
+# dpkg-query -L tomcat7 | grep doc/tomcat7/
+# ls -la /usr/share/doc/tomcat7/README.Debian.gz note this was actually a link to a file that doesn't exist. Nice!
+# The link refers to another nonexistent file in /usr/share/doc/tomcat7-common.
+# What created tomcat7-common? The tomcat7-common package. Duh! dpkg -S /usr/share/doc/tomcat7-common
+# Finally, the package documentation for tomcat7 recommending change to tomcat-users.xml.
+# less /usr/share/doc/tomcat7-common/README.Debian
+
+# Separate recommended changes for tomcat-users.xml
+# <role rolename="manager-gui"/>
+# <user username="tomcat" password="s3cret" roles="manager-gui"/>
+# <role rolename="admin-gui"/>
+# <user username="tomcat" password="s3cret" roles="admin-gui"/>
+# <role rolename="manager"/>
+# <user username="tomcat" password="s3cret" roles="manager"/>
+# Combined changes for tomcat-users.xml
+# <role rolename="manager-gui"/>
+# <role rolename="admin-gui"/>
+# <role rolename="manager"/>
+# <user username="tomcat" password="s3cret" roles="manager-gui, admin-gui, manager"/>
+
+# The tomcat-users.xml file is not loaded into augeas by default. Arbitrary xml files can be loaded into the augeas and
+# is described here http://www.krisbuytaert.be/blog/case-augeas
+
+# The following is the process to bring the tomcat-users.xml file into augeas.
+# set /augeas/load/Xml/incl[last()+1] /etc/tomcat7/tomcat-users.xml
+# set /augeas/load/Xml/lens Xml.lns
+# load
+# print /files/etc/tomcat7/tomcat-users.xml
+
+augeas { "tomcat-users_11_20_2013":
+  lens    => "Xml.lns",
+  incl    => "/etc/tomcat7/tomcat-users.xml",
+  context => "/files/etc/tomcat7/tomcat-users.xml",
+  onlyif  => "match tomcat-users/#comment[. = 'change tomcat-users_11_20_2013'] size == 0",
+  changes => [
+    "set tomcat-users/#comment[last()+1] 'change tomcat-users_11_20_2013'",
+
+    "set tomcat-users/role[last()+1] #empty",
+    "set tomcat-users/role[last()]/#attribute/rolename manager-gui",
+    
+    "set tomcat-users/role[last()+1] #empty",
+    "set tomcat-users/role[last()]/#attribute/rolename admin-gui",
+    
+    "set tomcat-users/role[last()+1] #empty",
+    "set tomcat-users/role[last()]/#attribute/rolename manager",
+    
+    "set tomcat-users/user[last()+1] #empty",
+    "set tomcat-users/user[last()]/#attribute/username tomcat",
+    "set tomcat-users/user[last()]/#attribute/password s3cret",
+    "set tomcat-users/user[last()]/#attribute/roles manager-gui,admin-gui,manager",
+  ],
+  require => Package["tomcat7"],
+}
+
+# The augeas xml lens fails to parse the default tomcat-users.xml file because the xml declaration on the first line
+# has double quotes. Which is fine according to the xml specification.
+# http://www.w3.org/TR/2008/REC-xml-20081126/#NT-XMLDecl
+
