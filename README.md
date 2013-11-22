@@ -11,10 +11,11 @@ TODO:
 - [x] Decide on base box selection
 - [ ] Dynamic network configuration for the guest. Setting up specific ips in every vagrant file is cumbersome
 - [ ] Install Java deployment/development environment
-- [ ] Install Java
-- [ ] Install Tomcat
-- [ ] Install Tomcat Admin tools
-- [ ] Configure admin user name/passord/group.
+- [x] Install Java
+- [x] Install Tomcat
+- [x] Install Tomcat Admin tools
+- [x] Configure Tomcat admin web applications user name/passord/group.
+- [ ] Restart tomcat after user file changes.
 - [ ] Supply tomcat admin user password at runtime.
 - [ ] Configure Tomcat startup options. JAVA_OPTS for various java -D properties, environment variables
 - [ ] Configure Tomcat for serving https. Create Java keystore and integrate into tomcat
