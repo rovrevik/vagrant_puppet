@@ -21,7 +21,7 @@
 # How does vagrant start puppet apply on the guest?
 # Vagrant typically executes shell commands over ssh. Debugging reveals that puppet apply is executed as follows.
 # sudo -H bash -l
-# puppet apply --color=false --manifestdir /tmp/vagrant-puppet/manifests --detailed-exitcodes /tmp/vagrant-puppet/manifests/default.pp || [ $? -eq 2 ]
+# puppet apply --color=false --manifestdir /tmp/vagrant-puppet/manifests --detailed-exitcodes /tmp/vagrant-puppet/manifests/site.pp || [ $? -eq 2 ]
 
 exec { "apt-get update":
   path => "/usr/bin",
@@ -114,10 +114,35 @@ augeas { "tomcat-users_11_20_2013":
     "set tomcat-users/user[last()]/#attribute/password s3cret",
     "set tomcat-users/user[last()]/#attribute/roles manager-gui,admin-gui,manager",
   ],
-  require => Package["tomcat7"],
+  require => [
+    Package["tomcat7"],
+    replace_matching_line['rewrite_tomcat_users_xml_decl']
+  ],
 }
 
 # The augeas xml lens fails to parse the default tomcat-users.xml file because the xml declaration on the first line
 # has double quotes. Which is fine according to the xml specification.
 # http://www.w3.org/TR/2008/REC-xml-20081126/#NT-XMLDecl
 
+# Update the tomcat-users.xml file so that augeas is happy. TODO: pull this out after the augeas lens is
+# updated.
+# ruby -pi.bak -e 'if $_ =~ /<\?xml(.*'"'"'.*)\?>/; $_ = "#{$&.gsub! %q{'"'"'}, %q{"}}\n" end' tomcat-users.xml
+
+# The definition below is stolen from Puppet 3 Cookbook.
+define replace_matching_line($file,$match,$replace) {
+  $match_quote_escaped = inline_template("<%= Regexp::escape(@match).gsub!(%q[\']){%q[\'\\\'\']} %>")
+  $command = inline_template("ruby -i -p -e 'sub(%r_<%=scope.lookupvar('match_quote_escaped')%>_, '\\''$replace'\\'')' ${file}")
+  exec { 'exec_ruby_sub':
+    command => $command,
+    path => '/opt/ruby/bin:/usr/bin',
+    onlyif => "/bin/grep -E '${match_quote_escaped}' ${file}",
+    logoutput => "true",
+  }
+}
+
+replace_matching_line { 'rewrite_tomcat_users_xml_decl':
+  file    => '/etc/tomcat7/tomcat-users.xml',
+  match   => '<?xml version=\'1.0\' encoding=\'utf-8\'?>',
+  replace => '<?xml version="1.0" encoding="utf-8"?>',
+  require => Package[tomcat7],
+}
