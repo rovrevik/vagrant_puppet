@@ -45,6 +45,12 @@ package { "openjdk-6-jdk":
   require => Exec["apt-get update"],
 }
 
+service { "tomcat7":
+    ensure  => "running",
+    enable  => "true",
+    require => Package["tomcat7"],
+}
+
 # What packages have tomcat and admin: apt-cache search tomcat admin
 # Where is tomcat7 installed/What file locations (-L) are installed to for tomcat7? dpkg-query -L tomcat7
 package { "tomcat7":
@@ -114,9 +120,10 @@ augeas { "tomcat-users_11_20_2013":
     "set tomcat-users/user[last()]/#attribute/password s3cret",
     "set tomcat-users/user[last()]/#attribute/roles manager-gui,admin-gui,manager",
   ],
+  notify => Service['tomcat7'],
   require => [
     Package["tomcat7"],
-    replace_matching_line['rewrite_tomcat_users_xml_decl']
+    replace_matching_line['rewrite_tomcat_users_xml_decl'],
   ],
 }
 
