@@ -3,13 +3,13 @@
 
 # What ruby version is vagrant executing on the guest?
 # Vagrant doesn't execute ruby directly. It executes puppet via ssh which uses ruby.
-# for the "official" vagrant boxes: cat /home/vagrant/postinstall.sh | grep ruby_home
+# for the 'official' vagrant boxes: cat /home/vagrant/postinstall.sh | grep ruby_home
 # for Puppet Labs boxes: cat /home/vagrant/ruby.sh | grep RUBY_VERSION=
 # cat /opt/ruby/bin/puppet | grep '#!'
 
 # What puppet version is executing on the guest?
 # The Puppet Labs and Vagrant boxes install puppet with gem. Interesting, given that puppet says that installing from
-# gems is "Not Recommended". I wonder why? What is the trade off? Is it just more complicated for the user? The vagrant
+# gems is 'Not Recommended'. I wonder why? What is the trade off? Is it just more complicated for the user? The vagrant
 # box has it backed in. (currently 2.7.19 ruby-gem)
 # The Puppet Labs boxes simply install the latest puppet vi gem. (currently 3.1.1)
 # executed: gem list | grep puppet
@@ -23,47 +23,47 @@
 # sudo -H bash -l
 # puppet apply --color=false --manifestdir /tmp/vagrant-puppet/manifests --detailed-exitcodes /tmp/vagrant-puppet/manifests/site.pp || [ $? -eq 2 ]
 
-exec { "apt-get update":
-  path => "/usr/bin",
+exec { 'apt-get update':
+  path => '/usr/bin',
 }
 
 # Just add a comment to any old file. Fails with Error: Could not find a suitable provider for augeas.
 # This did not work initially because the bindings were not visible to the ruby used to execute puppet on the guest.
 # This works now because the bindings installed with the ruby-augeas gem are visible in successive manifests executed after the gem is installed.
-augeas { "hosts_11_15_2013":
-  context => "/files/etc/hosts",
-  onlyif => "match #comment[. = 'change hosts_11_15_2013'] size == 0",
+augeas { 'hosts_11_15_2013':
+  context => '/files/etc/hosts',
+  onlyif => "match #comment[. = 'change_hosts_11_15_2013'] size == 0",
   changes => [
-      "set /files/etc/hosts/#comment[last()+1] 'change hosts_11_15_2013'",
+      'set /files/etc/hosts/#comment[last()+1] change_hosts_11_15_2013',
   ],
-  # require => Package["ruby-augeas"],
+  # require => Package[ruby-augeas],
   # Requirements for augueas are satisfied in the augeas_requirements.pp manifest
 }
 
-package { "openjdk-6-jdk":
+package { 'openjdk-6-jdk':
   ensure  => present,
-  require => Exec["apt-get update"],
+  require => Exec['apt-get update'],
 }
 
-service { "tomcat7":
-    ensure  => "running",
-    enable  => "true",
-    require => Package["tomcat7"],
+service { 'tomcat7':
+    ensure  => running,
+    enable  => true,
+    require => Package[tomcat7],
 }
 
 # What packages have tomcat and admin: apt-cache search tomcat admin
 # Where is tomcat7 installed/What file locations (-L) are installed to for tomcat7? dpkg-query -L tomcat7
-package { "tomcat7":
+package { 'tomcat7':
   ensure  => present,
-  require => Package["openjdk-6-jdk"],
+  require => Package[openjdk-6-jdk],
 }
 
 # The admin web applications (manager and host-manager) are installed with context files in /etc/tomcat7/Catalina/localhost
 # dpkg-query -L tomcat7-admin | grep /manager.xml
 # dpkg-query -L tomcat7-admin | grep /host-manager.xml
-package { "tomcat7-admin":
+package { 'tomcat7-admin':
   ensure  => present,
-  require => Package["tomcat7"],
+  require => Package[tomcat7],
 }
 
 # enable access to admin gui applications.
@@ -98,32 +98,32 @@ package { "tomcat7-admin":
 # load
 # print /files/etc/tomcat7/tomcat-users.xml
 
-augeas { "tomcat-users_11_20_2013":
-  lens    => "Xml.lns",
-  incl    => "/etc/tomcat7/tomcat-users.xml",
-  context => "/files/etc/tomcat7/tomcat-users.xml",
-  onlyif  => "match tomcat-users/#comment[. = 'change tomcat-users_11_20_2013'] size == 0",
+augeas { 'tomcat-users_11_20_2013':
+  lens    => 'Xml.lns',
+  incl    => '/etc/tomcat7/tomcat-users.xml',
+  context => '/files/etc/tomcat7/tomcat-users.xml',
+  onlyif  => "match tomcat-users/#comment[. = 'change_tomcat-users_11_20_2013'] size == 0",
   changes => [
-    "set tomcat-users/#comment[last()+1] 'change tomcat-users_11_20_2013'",
+    'set tomcat-users/#comment[last()+1] change_tomcat-users_11_20_2013',
 
-    "set tomcat-users/role[last()+1] #empty",
-    "set tomcat-users/role[last()]/#attribute/rolename manager-gui",
+    'set tomcat-users/role[last()+1] #empty',
+    'set tomcat-users/role[last()]/#attribute/rolename manager-gui',
     
-    "set tomcat-users/role[last()+1] #empty",
-    "set tomcat-users/role[last()]/#attribute/rolename admin-gui",
+    'set tomcat-users/role[last()+1] #empty',
+    'set tomcat-users/role[last()]/#attribute/rolename admin-gui',
     
-    "set tomcat-users/role[last()+1] #empty",
-    "set tomcat-users/role[last()]/#attribute/rolename manager",
+    'set tomcat-users/role[last()+1] #empty',
+    'set tomcat-users/role[last()]/#attribute/rolename manager',
     
-    "set tomcat-users/user[last()+1] #empty",
-    "set tomcat-users/user[last()]/#attribute/username tomcat",
-    "set tomcat-users/user[last()]/#attribute/password s3cret",
-    "set tomcat-users/user[last()]/#attribute/roles manager-gui,admin-gui,manager",
+    'set tomcat-users/user[last()+1] #empty',
+    'set tomcat-users/user[last()]/#attribute/username tomcat',
+    'set tomcat-users/user[last()]/#attribute/password s3cret',
+    'set tomcat-users/user[last()]/#attribute/roles manager-gui,admin-gui,manager',
   ],
-  notify => Service['tomcat7'],
+  notify => Service[tomcat7],
   require => [
-    Package["tomcat7"],
-    replace_matching_line['rewrite_tomcat_users_xml_decl'],
+    Package[tomcat7],
+    replace_matching_line[rewrite_tomcat_users_xml_decl],
   ],
 }
 
@@ -143,7 +143,7 @@ define replace_matching_line($file,$match,$replace) {
     command => $command,
     path => '/opt/ruby/bin:/usr/bin',
     onlyif => "/bin/grep -E '${match_quote_escaped}' ${file}",
-    logoutput => "true",
+    logoutput => true,
   }
 }
 
