@@ -7,6 +7,7 @@ This project is to learn, experiment and demonstrate using vagrant and puppet pr
 - Feature branches will be used to try out and harden additions before merging back into master.
 
 TODO:
+- [ ] Add some sort of threshold to prevent apt-get update running unnecessarily during repetitive vagrant provisions.
 - [x] Get augeas working with puppet provisioner
 - [x] Decide on base box selection
 - [ ] Dynamic network configuration for the guest. Setting up specific ips in every vagrant file is cumbersome
@@ -25,7 +26,7 @@ TODO: Install Java deployment/development environment
 - [x] Configure Tomcat admin web applications user name/passord/group.
 - [x] Restart tomcat after user file changes.
 - [ ] Supply tomcat admin user password at runtime.
-- [ ] Configure Tomcat startup options. JAVA_OPTS for various java -D properties, environment variables
+- [ ] Configure Tomcat startup options in /etc/defaults/tomcat7. JAVA_OPTS for various java -D properties, environment variables
 - [ ] Configure Tomcat for serving https. Create Java keystore and integrate into tomcat
 - [ ] Configure Tomcat ports in server.xml
 - [ ] Decide on sensible strategy to expose web application directories on the host to the guest
