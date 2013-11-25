@@ -102,9 +102,9 @@ augeas { 'tomcat-users_11_20_2013':
   lens    => 'Xml.lns',
   incl    => '/etc/tomcat7/tomcat-users.xml',
   context => '/files/etc/tomcat7/tomcat-users.xml',
-  onlyif  => "match tomcat-users/#comment[. = 'change_tomcat-users_11_20_2013'] size == 0",
+  onlyif  => "match tomcat-users/#comment[. = 'tomcat-users_11_20_2013'] size == 0",
   changes => [
-    'set tomcat-users/#comment[last()+1] change_tomcat-users_11_20_2013',
+    'set tomcat-users/#comment[last()+1] tomcat-users_11_20_2013',
 
     'set tomcat-users/role[last()+1] #empty',
     'set tomcat-users/role[last()]/#attribute/rolename manager-gui',
@@ -125,6 +125,23 @@ augeas { 'tomcat-users_11_20_2013':
     Package[tomcat7],
     replace_matching_line[rewrite_tomcat_users_xml_decl],
   ],
+}
+
+# apply these changes with what strategy? 
+# commenting out the default JAVA_OPT would prolly be the best approach but, augeas does not support commenting out
+# lines in a straight forward manner. Alternatives to commenting out are deleting the line, renaming the line or just
+# resetting the line.
+augeas { 'tomcat7_defaults_11_25_2013':
+  context => "/files/etc/default/tomcat7",
+  onlyif => "match #comment[. = 'tomcat7_defaults_11_25_2013'] size == 0",
+  changes => [
+      'set #comment[last()+1] tomcat7_defaults_11_25_2013',
+      "set JAVA_OPTS[last()+1] '\"-Djava.awt.headless=true -Xms512m -Xmx2G -XX:PermSize=512m\"'",
+      "set JAVA_OPTS[last()+1] '\"${JAVA_OPTS} -XX:-HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp\"'",
+      "set JAVA_OPTS[last()+1] '\"${JAVA_OPTS} -Xdebug -Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=n\"'",
+  ],
+  notify => Service[tomcat7],
+  require => Package[tomcat7],
 }
 
 # The augeas xml lens fails to parse the default tomcat-users.xml file because the xml declaration on the first line
