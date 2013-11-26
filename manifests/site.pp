@@ -32,9 +32,9 @@ exec { 'apt-get update':
 # This works now because the bindings installed with the ruby-augeas gem are visible in successive manifests executed after the gem is installed.
 augeas { 'hosts_11_15_2013':
   context => '/files/etc/hosts',
-  onlyif => "match #comment[. = 'change_hosts_11_15_2013'] size == 0",
+  onlyif => "match #comment[. = 'hosts_11_15_2013'] size == 0",
   changes => [
-      'set /files/etc/hosts/#comment[last()+1] change_hosts_11_15_2013',
+      'set /files/etc/hosts/#comment[last()+1] hosts_11_15_2013',
   ],
   # require => Package[ruby-augeas],
   # Requirements for augueas are satisfied in the augeas_requirements.pp manifest
@@ -97,6 +97,8 @@ package { 'tomcat7-admin':
 # set /augeas/load/Xml/lens Xml.lns
 # load
 # print /files/etc/tomcat7/tomcat-users.xml
+# set /files/etc/tomcat7/tomcat-users.xml/#comment/[last()+1] xxx
+# save
 
 augeas { 'tomcat-users_11_20_2013':
   lens    => 'Xml.lns',
@@ -121,14 +123,11 @@ augeas { 'tomcat-users_11_20_2013':
     'set tomcat-users/user[last()]/#attribute/roles manager-gui,admin-gui,manager',
   ],
   notify => Service[tomcat7],
-  require => [
-    Package[tomcat7],
-    replace_matching_line[rewrite_tomcat_users_xml_decl],
-  ],
+  require => replace_matching_line[rewrite_tomcat_users_xml_decl],
 }
 
 # apply these changes with what strategy? 
-# commenting out the default JAVA_OPT would prolly be the best approach but, augeas does not support commenting out
+# commenting out the default JAVA_OPT would probably be the best approach but, augeas does not support commenting out
 # lines in a straight forward manner. Alternatives to commenting out are deleting the line, renaming the line or just
 # resetting the line.
 augeas { 'tomcat7_defaults_11_25_2013':
@@ -144,19 +143,63 @@ augeas { 'tomcat7_defaults_11_25_2013':
   require => Package[tomcat7],
 }
 
-# The augeas xml lens fails to parse the default tomcat-users.xml file because the xml declaration on the first line
-# has double quotes. Which is fine according to the xml specification.
+# Configure SSL for tomcat
+# Official documentation SSL Configuration HOW-TO: http://tomcat.apache.org/tomcat-7.0-doc/ssl-howto.html
+
+# The following is the process to bring the tomcat server.xml file into augeas.
+# set /augeas/load/Xml/incl[last()+1] /etc/tomcat7/server.xml
+# set /augeas/load/Xml/lens Xml.lns
+# load
+# print /files/etc/tomcat7/server.xml
+# set /files/etc/tomcat7/server.xml/Server/Service/#comment[last()+1] xxx
+# save
+
+augeas { 'tomcat7_server_11_25_2013':
+  lens    => 'Xml.lns',
+  incl    => '/etc/tomcat7/server.xml',
+  context => '/files/etc/tomcat7/server.xml/Server/Service',
+  onlyif => "match #comment[. = 'tomcat7_server_11_25_2013'] size == 0",
+  changes => [
+    'set #comment[last()+1] tomcat7_server_11_25_2013',
+    'set Connector[last()+1] #empty',
+    'set Connector[last()]/#attribute/protocol HTTP/1.1',
+    'set Connector[last()]/#attribute/port 8443',
+    'set Connector[last()]/#attribute/maxThreads 150',
+    'set Connector[last()]/#attribute/scheme https',
+    'set Connector[last()]/#attribute/secure true',
+    'set Connector[last()]/#attribute/SSLEnabled true',
+    # 'set Connector[last()]/#attribute/keystoreFile ${user.home}/.keystore',
+    'set Connector[last()]/#attribute/keystoreFile /home/vagrant/.keystore',
+    'set Connector[last()]/#attribute/keystorePass changeit',
+    'set Connector[last()]/#attribute/clientAuth false',
+    'set Connector[last()]/#attribute/sslProtocol TLS',
+  ],
+  notify => Service[tomcat7],
+  require => [
+    replace_matching_line[rewrite_server_xml_decl],
+    Exec[tomcat_keytool]
+  ]
+}
+
+exec { 'tomcat_keytool':
+  command => 'keytool -genkey -alias tomcat -keyalg RSA --storepass changeit -dname "CN=ovrevik.com" -keypass changeit',
+  path    => '/usr/bin',
+  creates => '/home/vagrant/.keystore',
+  require => Package[openjdk-6-jdk]
+}
+
+# The augeas xml lens fails to parse the default tomcat-users.xml and server.xml file because the xml declaration on
+# the first line has double quotes. Which is fine according to the xml specification.
 # http://www.w3.org/TR/2008/REC-xml-20081126/#NT-XMLDecl
 
-# Update the tomcat-users.xml file so that augeas is happy. TODO: pull this out after the augeas lens is
-# updated.
+# Update the tomcat-users.xml file so that augeas is happy. TODO: pull this out after the augeas lens is updated.
 # ruby -pi.bak -e 'if $_ =~ /<\?xml(.*'"'"'.*)\?>/; $_ = "#{$&.gsub! %q{'"'"'}, %q{"}}\n" end' tomcat-users.xml
 
 # The definition below is stolen from Puppet 3 Cookbook.
 define replace_matching_line($file,$match,$replace) {
   $match_quote_escaped = inline_template("<%= Regexp::escape(@match).gsub!(%q[\']){%q[\'\\\'\']} %>")
   $command = inline_template("ruby -i -p -e 'sub(%r_<%=scope.lookupvar('match_quote_escaped')%>_, '\\''$replace'\\'')' ${file}")
-  exec { 'exec_ruby_sub':
+  exec { "exec_ruby_sub $file":
     command => $command,
     path => '/opt/ruby/bin:/usr/bin',
     onlyif => "/bin/grep -E '${match_quote_escaped}' ${file}",
@@ -164,8 +207,17 @@ define replace_matching_line($file,$match,$replace) {
   }
 }
 
+# Update the tomcat-users.xml file so that augeas is happy.
 replace_matching_line { 'rewrite_tomcat_users_xml_decl':
   file    => '/etc/tomcat7/tomcat-users.xml',
+  match   => '<?xml version=\'1.0\' encoding=\'utf-8\'?>',
+  replace => '<?xml version="1.0" encoding="utf-8"?>',
+  require => Package[tomcat7],
+}
+
+# Update the server.xml file so that augeas is happy.
+replace_matching_line { 'rewrite_server_xml_decl':
+  file    => '/etc/tomcat7/server.xml',
   match   => '<?xml version=\'1.0\' encoding=\'utf-8\'?>',
   replace => '<?xml version="1.0" encoding="utf-8"?>',
   require => Package[tomcat7],
