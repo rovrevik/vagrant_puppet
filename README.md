@@ -16,6 +16,7 @@ TODO:
 - [ ] Set time zone and locale.
 - [ ] Look at rspec-puppet and puppet-lint
 - [ ] Is it possible to update guest additions in a clean way when necessary?
+- [ ] Update xml declaration definition to accept and array of files?
 
 TODO: Update manifests to conform to examples in the [puppet style guide](http://docs.puppetlabs.com/guides/style_guide.html).
 - [x] Update all puppet strings to be single quoted if they don't need interpolation
