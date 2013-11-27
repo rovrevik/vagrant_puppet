@@ -17,6 +17,7 @@ TODO:
 - [ ] Look at rspec-puppet and puppet-lint
 - [ ] Is it possible to update guest additions in a clean way when necessary?
 - [ ] Update xml declaration definition to accept and array of files?
+- [ ] Reconcile default manifest file default.pp versus site.pp default.pp is the puppet.rb file while site.rb is the default generate file name.
 
 TODO: Update manifests to conform to examples in the [puppet style guide](http://docs.puppetlabs.com/guides/style_guide.html).
 - [x] Update all puppet strings to be single quoted if they don't need interpolation
@@ -33,11 +34,12 @@ TODO: Install Java deployment/development environment
 - [x] Install Tomcat Admin tools
 - [x] Configure Tomcat admin web applications user name/passord/group.
 - [x] Restart tomcat after user file changes.
-- [ ] Supply tomcat admin user password at runtime.
+- [x] Supply tomcat admin user password at runtime. Went with default hiera values.
 - [x] Configure Tomcat startup options in /etc/defaults/tomcat7. JAVA_OPTS for various java -D properties, environment variables
 - [x] Configure Tomcat for serving https. Create Java keystore and integrate into tomcat
 - [ ] Configure Tomcat ports in server.xml
 - [ ] Decide on sensible strategy to expose web application directories on the host to the guest
 - [x] Add tomcat service restart after tomcat-users.xml change
-- [ ] Create sensible parameter mechanism for keytool.
-- [ ] Decide on what directory the keystore should be.
+- [x] Create sensible parameter mechanism for keytool. Went with default hiera values.
+- [x] Decide on what directory the keystore should be. Went with /etc/tomcat/.keystore for the default hiera value.
+- [ ] Rename the augeas_requirements.pp file to something for more general preconditions.

@@ -25,8 +25,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   # trying out puppets boxes. I think this is the way to go because they provide veewee definitions.
   # at https://github.com/puppetlabs/puppet-vagrant-boxes
-  config.vm.box = "ubuntu-server-12042-x64-vbox4210"
-  config.vm.box_url = "http://puppet-vagrant-boxes.puppetlabs.com/ubuntu-server-12042-x64-vbox4210.box"
+  config.vm.box = 'ubuntu-server-12042-x64-vbox4210'
+  config.vm.box_url = 'http://puppet-vagrant-boxes.puppetlabs.com/ubuntu-server-12042-x64-vbox4210.box'
 
   # The url from where the 'config.vm.box' box will be fetched if it
   # doesn't already exist on the user's system.
@@ -96,12 +96,17 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # # }
   #
   config.vm.provision :puppet do |puppet|
-    puppet.manifests_path = "manifests"
-    puppet.manifest_file  = "augeas_requirements.pp"
+    puppet.manifests_path = 'manifests'
+    puppet.manifest_file  = 'augeas_requirements.pp'
   end
   config.vm.provision :puppet do |puppet|
-    puppet.manifests_path = "manifests"
-    puppet.manifest_file  = "site.pp"
+    puppet.manifests_path = 'manifests'
+    puppet.manifest_file  = 'site.pp'
+
+    # How do hiera values get exposed to puppet? It looks like all the hiera values get looked up before the manifest
+    # is executed. Just having an empty hiera.yaml file will case hiera to look for data sources in the /var/lib/hiera.
+    # Hiera config file location http://docs.puppetlabs.com/hiera/1/configuring.html#from-puppet
+    # Hiera config file default values http://docs.puppetlabs.com/hiera/1/configuring.html#default-config-values
   end
 
   # Enable provisioning with chef solo, specifying a cookbooks path, roles

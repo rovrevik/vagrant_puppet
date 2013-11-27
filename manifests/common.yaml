@@ -1,0 +1,9 @@
+---
+  tomcat_admin_username: tomcat
+  tomcat_admin_password: s3cret
+
+  tomcat_keystore_storepass: changeit
+  tomcat_keystore_keypass: changeit
+  tomcat_keystore_keystore: /etc/tomcat7/.keystore
+  tomcat_keystore_dname: CN=Ryan Ovrevik, OU=development, O=ovrevik.com, L=Milton, S=Georgia, C=US
+---

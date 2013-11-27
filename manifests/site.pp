@@ -25,6 +25,10 @@
 
 exec { 'apt-get update':
   path => '/usr/bin',
+  # onlyif => [
+  # Only execute if apt hasn't been executed in the last 5 minutes
+  # $((`date +%s` - `stat -c %Y /var/log/apt/term.log` > 300000))
+  # ]
 }
 
 # Just add a comment to any old file. Fails with Error: Could not find a suitable provider for augeas.
@@ -100,6 +104,9 @@ package { 'tomcat7-admin':
 # set /files/etc/tomcat7/tomcat-users.xml/#comment/[last()+1] xxx
 # save
 
+$tomcat_admin_username = hiera('tomcat_admin_username')
+$tomcat_admin_password = hiera('tomcat_admin_password')
+
 augeas { 'tomcat-users_11_20_2013':
   lens    => 'Xml.lns',
   incl    => '/etc/tomcat7/tomcat-users.xml',
@@ -118,8 +125,8 @@ augeas { 'tomcat-users_11_20_2013':
     'set tomcat-users/role[last()]/#attribute/rolename manager',
     
     'set tomcat-users/user[last()+1] #empty',
-    'set tomcat-users/user[last()]/#attribute/username tomcat',
-    'set tomcat-users/user[last()]/#attribute/password s3cret',
+    "set tomcat-users/user[last()]/#attribute/username $tomcat_admin_username",
+    "set tomcat-users/user[last()]/#attribute/password $tomcat_admin_password",
     'set tomcat-users/user[last()]/#attribute/roles manager-gui,admin-gui,manager',
   ],
   notify => Service[tomcat7],
@@ -154,6 +161,21 @@ augeas { 'tomcat7_defaults_11_25_2013':
 # set /files/etc/tomcat7/server.xml/Server/Service/#comment[last()+1] xxx
 # save
 
+$tomcat_keystore_storepass = hiera('tomcat_keystore_storepass')
+$tomcat_keystore_keypass = hiera('tomcat_keystore_keypass')
+$tomcat_keystore_keystore = hiera('tomcat_keystore_keystore')
+$tomcat_keystore_dname = hiera('tomcat_keystore_dname')
+
+exec { 'tomcat_keytool':
+  command => "keytool -genkey -alias tomcat -keyalg RSA --storepass '$tomcat_keystore_storepass' -dname '$tomcat_keystore_dname' -keypass $tomcat_keystore_storepass -keystore '$tomcat_keystore_keystore'",
+  path    => '/usr/bin',
+  creates => $tomcat_keystore_keyfile,
+  require => [
+    Package[openjdk-6-jdk],
+    Package[tomcat7], # require tomcat7 so that the /etc/tomcat7 directory exists.
+  ],
+}
+->
 augeas { 'tomcat7_server_11_25_2013':
   lens    => 'Xml.lns',
   incl    => '/etc/tomcat7/server.xml',
@@ -168,24 +190,13 @@ augeas { 'tomcat7_server_11_25_2013':
     'set Connector[last()]/#attribute/scheme https',
     'set Connector[last()]/#attribute/secure true',
     'set Connector[last()]/#attribute/SSLEnabled true',
-    # 'set Connector[last()]/#attribute/keystoreFile ${user.home}/.keystore',
-    'set Connector[last()]/#attribute/keystoreFile /home/vagrant/.keystore',
-    'set Connector[last()]/#attribute/keystorePass changeit',
+    "set Connector[last()]/#attribute/keystoreFile '$tomcat_keystore_keystore'",
+    "set Connector[last()]/#attribute/keystorePass $tomcat_keystore_keypass",
     'set Connector[last()]/#attribute/clientAuth false',
     'set Connector[last()]/#attribute/sslProtocol TLS',
   ],
   notify => Service[tomcat7],
-  require => [
-    replace_matching_line[rewrite_server_xml_decl],
-    Exec[tomcat_keytool]
-  ]
-}
-
-exec { 'tomcat_keytool':
-  command => 'keytool -genkey -alias tomcat -keyalg RSA --storepass changeit -dname "CN=ovrevik.com" -keypass changeit',
-  path    => '/usr/bin',
-  creates => '/home/vagrant/.keystore',
-  require => Package[openjdk-6-jdk]
+  require => replace_matching_line[rewrite_server_xml_decl],
 }
 
 # The augeas xml lens fails to parse the default tomcat-users.xml and server.xml file because the xml declaration on

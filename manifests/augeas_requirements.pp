@@ -11,7 +11,7 @@ exec { 'apt-get update':
 # dpkg --get-selections | grep augeas
 
 # Go ahead and install the augeas command line tools in addition to the libraries that are needed for puppet.
-# installing the 'libaugeas-ruby', 'libaugeas-ruby1.8' packages seemed like a good idea but installed files were not
+# Installing the 'libaugeas-ruby', 'libaugeas-ruby1.8' packages seemed like a good idea but installed files were not
 # readily accessible to the ruby version that is used to execute puppet.
 $augeas_packages=['augeas-tools', 'libaugeas-dev', 'pkg-config']
 package { $augeas_packages:
@@ -31,4 +31,20 @@ package { 'ruby-augeas':
     Package[libaugeas-dev], # Dependency to address 'augeas-devel not installed (RuntimeError)'
     Package[pkg-config], # Dependency to address build 'Failed to build gem native extension.''
   ]
+}
+
+# Copy hiera data source yaml files to the default directory. Actually, /var/lib/hiera is the default directory if the
+# hiera.yaml exists but is empty. Apparently, these files must be put into place before a manifest that uses the hiera
+# function is processed.
+
+file { '/var/lib/hiera': ensure => directory, }
+->
+file { 'hiera_files':
+  source        => '/vagrant/manifests/common.yaml',
+  path          => '/var/lib/hiera/common.yaml',
+  ensure        => present,
+  recurse       => true,
+  owner         => root,
+  group         => root,
+  mode          => 0640,
 }
