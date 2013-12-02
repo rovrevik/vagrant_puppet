@@ -1,5 +1,23 @@
-exec { 'apt-get update':
-  path => '/usr/bin',
+# This is a file to satisfy the requirements for all subsequent manifests. The intent of this file is to keep it small
+# and absolutely essential.
+
+Exec {
+  path => ['/usr/bin','/bin'],
+}
+
+# It is a nice optimization to prevent apt-get update from executing so frequently. I have not found a way to
+# programmatically determine when the last time that apt-get update ran successfully. I have looked at the various
+# command line utilities with no luck and I have also looked into file times for various log files that apt-get
+# touches with no luck.
+
+# The solution that I am going to try is to touch a file when ever apt-get update runs and and use that as the sentinel
+# for executing next time. apt-get update will be executed if the file does not exist or if the file's age is not
+# withing the accepted tolerance.
+$apt_get_threshold = 60 * 5 # Only execute if apt hasn't been executed in the last 5 minutes
+$apt_get_output = '/var/puppet_apt_get'
+exec { apt_get_update:
+  command  => "apt-get update > $apt_get_output",
+  onlyif => "echo $(( `date +%s` - `stat -c %X $apt_get_output || echo 0` <= $apt_get_threshold )) | grep 0",
 }
 
 # Augeas dependencies installation and minimal use.
@@ -16,7 +34,7 @@ exec { 'apt-get update':
 $augeas_packages=['augeas-tools', 'libaugeas-dev', 'pkg-config']
 package { $augeas_packages:
   ensure  => present,
-  require => Exec['apt-get update'],
+  require => Exec[apt_get_update],
 }
 
 # Where do the ruby bindings for augeas get installed?

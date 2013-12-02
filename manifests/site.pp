@@ -23,12 +23,15 @@
 # sudo -H bash -l
 # puppet apply --color=false --manifestdir /tmp/vagrant-puppet/manifests --detailed-exitcodes /tmp/vagrant-puppet/manifests/site.pp || [ $? -eq 2 ]
 
-exec { 'apt-get update':
-  path => '/usr/bin',
-  # onlyif => [
-  # Only execute if apt hasn't been executed in the last 5 minutes
-  # $((`date +%s` - `stat -c %Y /var/log/apt/term.log` > 300000))
-  # ]
+Exec {
+  path => ['/usr/bin','/bin'],
+}
+
+$apt_get_threshold = 60 * 5 # Only execute if apt hasn't been executed in the last 5 minutes
+$apt_get_output = '/var/puppet_apt_get'
+exec { apt_get_update:
+  command  => "apt-get update > $apt_get_output",
+  onlyif => "echo $(( `date +%s` - `stat -c %X $apt_get_output || echo 0` <= $apt_get_threshold )) | grep 0",
 }
 
 # Just add a comment to any old file. Fails with Error: Could not find a suitable provider for augeas.
@@ -46,7 +49,7 @@ augeas { 'hosts_11_15_2013':
 
 package { 'openjdk-6-jdk':
   ensure  => present,
-  require => Exec['apt-get update'],
+  require => Exec[apt_get_update],
 }
 
 service { 'tomcat7':
