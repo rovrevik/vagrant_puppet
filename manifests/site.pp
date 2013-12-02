@@ -34,8 +34,8 @@ Exec {
 $node_timezone = hiera('node_timezone')
 exec { node_timezone:
   command => "echo $node_timezone | sudo tee /etc/timezone && dpkg-reconfigure --frontend noninteractive tzdata",
-  path => ['/usr/bin','/bin','/usr/sbin/'],  
-  unless => "grep $node_timezone /etc/timezone",
+  path    => ['/usr/bin','/bin','/usr/sbin/'],  
+  unless  => "grep $node_timezone /etc/timezone",
 }
 
 # Only execute if apt hasn't been executed in the last 5 minutes. Can't use hiera in this manifest
@@ -43,7 +43,7 @@ $apt_get_threshold = 60 * hiera('apt_get_update_threshold_minutes')
 $apt_get_output = '/var/puppet_apt_get'
 exec { apt_get_update:
   command => "apt-get update > $apt_get_output",
-  onlyif => "echo $(( `date +%s` - `stat -c %X $apt_get_output || echo 0` <= $apt_get_threshold )) | grep 0",
+  onlyif  => "echo $(( `date +%s` - `stat -c %X $apt_get_output || echo 0` <= $apt_get_threshold )) | grep 0",
   require => Exec[node_timezone],
 }
 
@@ -52,7 +52,7 @@ exec { apt_get_update:
 # This works now because the bindings installed with the ruby-augeas gem are visible in successive manifests executed after the gem is installed.
 augeas { hosts_11_15_2013:
   context => '/files/etc/hosts',
-  onlyif => "match #comment[. = 'hosts_11_15_2013'] size == 0",
+  onlyif  => "match #comment[. = 'hosts_11_15_2013'] size == 0",
   changes => [
       'set /files/etc/hosts/#comment[last()+1] hosts_11_15_2013',
   ],
@@ -145,7 +145,7 @@ augeas { tomcat_users_11_20_2013:
     "set tomcat-users/user[last()]/#attribute/password $tomcat_admin_password",
     'set tomcat-users/user[last()]/#attribute/roles manager-gui,admin-gui,manager',
   ],
-  notify => Service[tomcat7],
+  notify  => Service[tomcat7],
   require => replace_matching_line[rewrite_tomcat_users_xml_decl],
 }
 
@@ -155,14 +155,14 @@ augeas { tomcat_users_11_20_2013:
 # resetting the line.
 augeas { tomcat7_defaults_11_25_2013:
   context => "/files/etc/default/tomcat7",
-  onlyif => "match #comment[. = 'tomcat7_defaults_11_25_2013'] size == 0",
+  onlyif  => "match #comment[. = 'tomcat7_defaults_11_25_2013'] size == 0",
   changes => [
       'set #comment[last()+1] tomcat7_defaults_11_25_2013',
       "set JAVA_OPTS[last()+1] '\"-Djava.awt.headless=true -Xms512m -Xmx2G -XX:PermSize=512m\"'",
       "set JAVA_OPTS[last()+1] '\"${JAVA_OPTS} -XX:-HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp\"'",
       "set JAVA_OPTS[last()+1] '\"${JAVA_OPTS} -Xdebug -Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=n\"'",
   ],
-  notify => Service[tomcat7],
+  notify  => Service[tomcat7],
   require => Package[tomcat7],
 }
 
@@ -196,7 +196,7 @@ augeas { tomcat7_server_11_25_2013:
   lens    => 'Xml.lns',
   incl    => '/etc/tomcat7/server.xml',
   context => '/files/etc/tomcat7/server.xml/Server/Service',
-  onlyif => "match #comment[. = 'tomcat7_server_11_25_2013'] size == 0",
+  onlyif  => "match #comment[. = 'tomcat7_server_11_25_2013'] size == 0",
   changes => [
     'set #comment[last()+1] tomcat7_server_11_25_2013',
     'set Connector[last()+1] #empty',
@@ -211,7 +211,7 @@ augeas { tomcat7_server_11_25_2013:
     'set Connector[last()]/#attribute/clientAuth false',
     'set Connector[last()]/#attribute/sslProtocol TLS',
   ],
-  notify => Service[tomcat7],
+  notify  => Service[tomcat7],
   require => replace_matching_line[rewrite_server_xml_decl],
 }
 
@@ -227,9 +227,9 @@ define replace_matching_line($file,$match,$replace) {
   $match_quote_escaped = inline_template("<%= Regexp::escape(@match).gsub!(%q[\']){%q[\'\\\'\']} %>")
   $command = inline_template("ruby -i -p -e 'sub(%r_<%=scope.lookupvar('match_quote_escaped')%>_, '\\''$replace'\\'')' ${file}")
   exec { "exec_ruby_sub $file":
-    command => $command,
-    path => '/opt/ruby/bin:/usr/bin',
-    onlyif => "/bin/grep -E '${match_quote_escaped}' ${file}",
+    command   => $command,
+    path      => '/opt/ruby/bin:/usr/bin',
+    onlyif    => "/bin/grep -E '${match_quote_escaped}' ${file}",
     logoutput => true,
   }
 }

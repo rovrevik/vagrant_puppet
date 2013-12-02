@@ -16,8 +16,8 @@ Exec {
 $apt_get_threshold = 60 * 5 # Only execute if apt hasn't been executed in the last 5 minutes
 $apt_get_output = '/var/puppet_apt_get'
 exec { apt_get_update:
-  command  => "apt-get update > $apt_get_output",
-  onlyif => "echo $(( `date +%s` - `stat -c %X $apt_get_output || echo 0` <= $apt_get_threshold )) | grep 0",
+  command => "apt-get update > $apt_get_output",
+  onlyif  => "echo $(( `date +%s` - `stat -c %X $apt_get_output || echo 0` <= $apt_get_threshold )) | grep 0",
 }
 
 # Augeas dependencies installation and minimal use.
@@ -43,9 +43,9 @@ package { $augeas_packages:
 
 # Add augeas support via gem instead for the native package manager. 
 package { 'ruby-augeas':
-  ensure  => present,
-  provider => gem,
-  require => [
+  ensure    => present,
+  provider  => gem,
+  require   => [
     Package[libaugeas-dev], # Dependency to address 'augeas-devel not installed (RuntimeError)'
     Package[pkg-config], # Dependency to address build 'Failed to build gem native extension.''
   ]
@@ -58,11 +58,11 @@ package { 'ruby-augeas':
 file { '/var/lib/hiera': ensure => directory, }
 ->
 file { 'hiera_files':
-  source        => '/vagrant/manifests/common.yaml',
-  path          => '/var/lib/hiera/common.yaml',
-  ensure        => present,
-  recurse       => true,
-  owner         => root,
-  group         => root,
-  mode          => 0640,
+  source  => '/vagrant/manifests/common.yaml',
+  path    => '/var/lib/hiera/common.yaml',
+  ensure  => present,
+  recurse => true,
+  owner   => root,
+  group   => root,
+  mode    => 0640,
 }
