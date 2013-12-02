@@ -12,6 +12,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # Every Vagrant virtual environment requires a box to build off of.
   config.vm.box = "base"
 
+  # rovrevik comments:
   # How and by whom is the default box created?
   # The default box used to be "precise" and it was at "http://files.vagrantup.com/precise32.box". Not so anymore.
   # It is apparently maintained by mitchellh implied here: https://github.com/mitchellh/vagrant/wiki/Available-Vagrant-Boxes
@@ -24,16 +25,17 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   # trying out puppets boxes. I think this is the way to go because they provide veewee definitions.
   # at https://github.com/puppetlabs/puppet-vagrant-boxes
-  config.vm.box = "ubuntu-server-12042-x64-vbox4210"
-  config.vm.box_url = "http://puppet-vagrant-boxes.puppetlabs.com/ubuntu-server-12042-x64-vbox4210.box"
+  config.vm.box = 'ubuntu-server-12042-x64-vbox4210'
+  config.vm.box_url = 'http://puppet-vagrant-boxes.puppetlabs.com/ubuntu-server-12042-x64-vbox4210.box'
 
   # The url from where the 'config.vm.box' box will be fetched if it
   # doesn't already exist on the user's system.
   # config.vm.box_url = "http://domain.com/path/to/above.box"
 
+  # rovrevik comments:
   # What is the default networking configuration when nothing is explicitly configured?
   # The default network configuration for virtual box is NAT. Thus it is not accessible from the host.
-  # What is the simplest way to expose the guest to the host?
+  # What is the simplest way to expose the guest to the host? Use config.vm.network :private_network, ip: xxx.
   # How do you dynamically expose the guest to the host?
 
   # Create a forwarded port mapping which allows access to a specific port
@@ -43,7 +45,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   # Create a private network, which allows host-only access to the machine
   # using a specific IP.
-  # config.vm.network :private_network, ip: "192.168.33.10"
+  config.vm.network :private_network, ip: "192.168.33.10"
 
   # Create a public network, which generally matched to bridged network.
   # Bridged networks make the machine appear as another physical device on
@@ -94,12 +96,17 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # # }
   #
   config.vm.provision :puppet do |puppet|
-    puppet.manifests_path = "manifests"
-    puppet.manifest_file  = "augeas_requirements.pp"
+    puppet.manifests_path = 'manifests'
+    puppet.manifest_file  = 'augeas_requirements.pp'
   end
   config.vm.provision :puppet do |puppet|
-    puppet.manifests_path = "manifests"
-    puppet.manifest_file  = "site.pp"
+    puppet.manifests_path = 'manifests'
+    puppet.manifest_file  = 'site.pp'
+
+    # How do hiera values get exposed to puppet? It looks like all the hiera values get looked up before the manifest
+    # is executed. Just having an empty hiera.yaml file will case hiera to look for data sources in the /var/lib/hiera.
+    # Hiera config file location http://docs.puppetlabs.com/hiera/1/configuring.html#from-puppet
+    # Hiera config file default values http://docs.puppetlabs.com/hiera/1/configuring.html#default-config-values
   end
 
   # Enable provisioning with chef solo, specifying a cookbooks path, roles
