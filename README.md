@@ -13,7 +13,8 @@ TODO:
 - [ ] Dynamic network configuration for the guest. Setting up specific ips in every vagrant file is cumbersome
 - [x] update resources to include quotes or not. The documentation on the puppet site demonstrates not using quotes.
 - [ ] Add supplemental editor packages. vim, mc what else?
-- [ ] Set time zone and locale.
+- [x] Set time zone.
+- [ ] Set locale.
 - [ ] Look at rspec-puppet and puppet-lint
 - [ ] Is it possible to update guest additions in a clean way when necessary?
 - [ ] Update xml declaration definition to accept and array of files?
