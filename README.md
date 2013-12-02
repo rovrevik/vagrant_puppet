@@ -20,15 +20,15 @@ TODO:
 - [ ] Update xml declaration definition to accept and array of files?
 - [ ] Reconcile default manifest file default.pp versus site.pp default.pp is the puppet.rb file while site.rb is the default generate file name.
 - [ ] Rename the augeas_requirements.pp file to something for more general preconditions.
-- [ ] Extract apt-get with threshold and default threshold to class and hiera
+- [x] Extract apt-get with threshold and default threshold to class and hiera
 
 TODO: Update manifests to conform to examples in the [puppet style guide](http://docs.puppetlabs.com/guides/style_guide.html).
 - [x] Update all puppet strings to be single quoted if they don't need interpolation
 - [x] update 'true' to true
 - [ ] Refactor shell execs to use the shellquote function.
 - [ ] Can run stages be used instead of different manifests files to satisfy augeas?
-- [ ] Change onlyif not crap to unless.
-- [ ] Line up =>s
+- [ ] Change onlyif not crap to unless. Augeas only has onlyif no unless.
+- [x] Line up =>s
 
 TODO: Install Java deployment/development environment
 - [ ] Extract Tomcat stuff into separate manifests and classes.
@@ -40,7 +40,7 @@ TODO: Install Java deployment/development environment
 - [x] Supply tomcat admin user password at runtime. Went with default hiera values.
 - [x] Configure Tomcat startup options in /etc/defaults/tomcat7. JAVA_OPTS for various java -D properties, environment variables
 - [x] Configure Tomcat for serving https. Create Java keystore and integrate into tomcat
-- [ ] Configure Tomcat ports in server.xml
+- [x] Configure Tomcat ports in server.xml
 - [ ] Decide on sensible strategy to expose web application directories on the host to the guest
 - [x] Add tomcat service restart after tomcat-users.xml change
 - [x] Create sensible parameter mechanism for keytool. Went with default hiera values.

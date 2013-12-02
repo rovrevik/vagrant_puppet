@@ -185,20 +185,20 @@ $tomcat_keystore_dname = hiera('tomcat_keystore_dname')
 exec { tomcat_keytool:
   command => "keytool -genkey -alias tomcat -keyalg RSA --storepass '$tomcat_keystore_storepass' -dname '$tomcat_keystore_dname' -keypass $tomcat_keystore_storepass -keystore '$tomcat_keystore_keystore'",
   path    => '/usr/bin',
-  creates => $tomcat_keystore_keyfile,
+  creates => $tomcat_keystore_keystore,
   require => [
     Package['openjdk-6-jdk'],
     Package[tomcat7], # require tomcat7 so that the /etc/tomcat7 directory exists.
   ],
 }
 ->
-augeas { tomcat7_server_11_25_2013:
+augeas { tomcat7_server_https_connector:
   lens    => 'Xml.lns',
   incl    => '/etc/tomcat7/server.xml',
   context => '/files/etc/tomcat7/server.xml/Server/Service',
-  onlyif  => "match #comment[. = 'tomcat7_server_11_25_2013'] size == 0",
+  onlyif  => "match #comment[. = 'tomcat7_server_https_connector'] size == 0",
   changes => [
-    'set #comment[last()+1] tomcat7_server_11_25_2013',
+    'set #comment[last()+1] tomcat7_server_https_connector',
     'set Connector[last()+1] #empty',
     'set Connector[last()]/#attribute/protocol HTTP/1.1',
     'set Connector[last()]/#attribute/port 8443',
@@ -213,6 +213,36 @@ augeas { tomcat7_server_11_25_2013:
   ],
   notify  => Service[tomcat7],
   require => replace_matching_line[rewrite_server_xml_decl],
+}
+
+if hiera('tomcat_privileged_ports') {
+  augeas { tomcat7_defaults_authbind_yes:
+    context => "/files/etc/default/tomcat7",
+    onlyif  => "match #comment[. = 'tomcat7_defaults_authbind_yes'] size == 0",
+    changes => [
+        'set #comment[last()+1] tomcat7_defaults_authbind_yes',
+        'set AUTHBIND "yes"',
+    ],
+    require => Package[tomcat7],
+  }
+  ->
+  # This should run for configurations with or without 8080 and/or 8443.
+  augeas { tomcat7_server_privileged_ports:
+    lens    => 'Xml.lns',
+    incl    => '/etc/tomcat7/server.xml',
+    context => '/files/etc/tomcat7/server.xml/Server/Service',
+    onlyif  => "match #comment[. = 'tomcat7_server_privileged_ports'] size == 0",
+    changes => [
+      'set #comment[last()+1] tomcat7_server_privileged_ports',
+      'set Connector[#attribute/port = "8080"]/#attribute/port 80',
+      'set Connector[#attribute/port = "8443"]/#attribute/port 443',
+    ],
+    notify  => Service[tomcat7],
+    require => [
+      replace_matching_line[rewrite_server_xml_decl],
+      Augeas[tomcat7_server_https_connector]
+    ]
+  }
 }
 
 # The augeas xml lens fails to parse the default tomcat-users.xml and server.xml file because the xml declaration on
