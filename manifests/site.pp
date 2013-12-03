@@ -279,3 +279,20 @@ replace_matching_line { rewrite_server_xml_decl:
   replace => '<?xml version="1.0" encoding="utf-8"?>',
   require => Package[tomcat7],
 }
+
+# Install mysql and supporting tools sufficient for development
+# puppetlabs/mysql: https://forge.puppetlabs.com/puppetlabs/mysql
+# This link is way outdated: http://puppetlabs.com/blog/module-of-the-week-puppetlabs-mysql-mysql-management
+# The mysql/tests/ files are also out of date.
+
+if hiera('mysql_install') {
+  class { 'mysql::server':
+    package_name  => hiera('mysql_package'),
+    root_password => hiera('mysql_root_password'),
+    override_options => {
+      mysqld => {
+        bind_address => hiera('mysql_bind_address')
+      }
+    },
+  }
+}
