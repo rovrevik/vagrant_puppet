@@ -280,7 +280,7 @@ replace_matching_line { rewrite_server_xml_decl:
   require => Package[tomcat7],
 }
 
-# Install mysql and supporting tools sufficient for development
+# Install MySQL and supporting tools sufficient for development
 # puppetlabs/mysql: https://forge.puppetlabs.com/puppetlabs/mysql
 # puppetlabs/puppetlabs-mysql repository: https://github.com/puppetlabs/puppetlabs-mysql
 # This link is way outdated: http://puppetlabs.com/blog/module-of-the-week-puppetlabs-mysql-mysql-management
