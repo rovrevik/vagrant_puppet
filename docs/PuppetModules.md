@@ -1,7 +1,7 @@
 Managing Puppet modules
 -----------------------
 
-Why start using puppet modules.
+Why start using puppet modules?
 
 While on a previous project we were implementing vagrant and puppet and learning it at the same time. The idea of using all the communities puppet modules was the recommend approach and very enticing. Using git submodules was a frustrating process for members of my team. Additionally, the various modules out there in the community varied greatly with respect to robustness. I spent many hours tracing module source attempting to get everything working properly. (It is likely that the time sink was due to ramping up on vagrant and puppet more than the module itself.)
 
@@ -21,32 +21,33 @@ Interesting repositories aimed at simplifying vagrant and puppet manifest manage
 - [rodjek / librarian-puppet](https://github.com/rodjek/librarian-puppet)
 - [narkisr / opskeleton](https://github.com/narkisr/opskeleton)
 
-Steps i did to get librarian-puppet initially working (and need to be better document):
-- gem install librarian-puppet-maestrodev
-- gem install puppet
-- librarian-puppet init
-- commit Puppetfile and Puppetfile.lock, .gitignore
+Using RVM for the project is long overdue. I had always used .rvmrc files in the past. This time I am going to move to the recommended .ruby-version and .ruby-gemset files. I found that the .ruby-gemset was not taking effect only the .ruby-version. The .ruby-gemset started to function in a fresh shell. 
 
-(RVM Best Practices)[http://rvm.io/rvm/best-practices]
-https://rvm.io/workflow
+- [RVM Best Practices](http://rvm.io/rvm/best-practices)
+- [RVM Workflow](https://rvm.io/workflow)
+- [Installing RVM](https://rvm.io/rvm/install) Remembering how the ruby version switch scripts work:  The install hooks into cd with stuff added to .profile. 
 
-Create gemset.
+The ruby version should correspond to the puppet embedded ruby version of executing on the guest or vagrant embedded version running on the host?
+- The ruby version on the guest puppet (as of this moment) is 1.9.3p392
+- The ruby version on the host vagrant (as of this moment) is 1.9.3p448
+Running a sensible 1.9.3 should be fine.
+
+Create a gemset for the project.
 - rvm install 1.9.3
 - rvm use 1.9.3
 - rvm gemset create vagrant_puppet
 - create ruby switch script. (preferably .ruby-version)
   - rvm --ruby-version use 1.9.3@vagrant_puppet
   - rvm --create use 1.9.3@vagrant_puppet --rvmrc
+- git add .ruby-version and .ruby-gemset
 
-Remembering how do the ruby version switch scripts work: 
-https://rvm.io/rvm/install
-The install hooks into cd with stuff added to .profile.
+Add [Bundler](http://bundler.io/) to the mix.
+- bundle init
+- bundle install
+- git add Gemfile Gemfile.lock
 
-I had always used .rvmrc files in the past. This time I am going to move to recommended .ruby-version and .ruby-gemset. I found that the .ruby-gemset was not taking effect only the .ruby-version. The .ruby-gemset started to function in a fresh shell/
-
-Add puppet and librarian gems to gem file.
-
-Using RVM for the project is long overdue. The ruby version should correspond to the puppet embedded ruby version of executing on the guest or vagrant embedded version running on the host?
-- The ruby version on the guest puppet (as of this moment) is 1.9.3p392
-- The ruby version on the host vagrant (as of this moment) is 1.9.3p448
-Running a sensible 1.9.3 should be fine.
+Add librarian-puppet to the mix:
+- add puppet, librarian-puppet-meastrodev and ruby version to Gemfile
+- librarian-puppet init
+- add the puppetlabs/mysql module to the Puppetfile
+- git add Puppetfile and Puppetfile.lock, .gitignore
