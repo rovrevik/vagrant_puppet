@@ -6,6 +6,18 @@ This project exists to demonstrate learn and experiment using vagrant and puppet
 - The idea is that master should represent a useful baseline for a typical development server.
 - Feature branches will be used to try out and harden additions before merging back into master.
 
+Dependencies/Preconditions:
+- [Vagrant](http://www.vagrantup.com/)
+- [VirtualBox](https://www.virtualbox.org/)
+- [RVM](https://rvm.io/): this project uses .ruby-version and .ruby-gemset
+- Note: All development was done on OSX and maybe not even executed on windows or linux.
+
+Running:
+- clone the repository
+- execute bundle install
+- execute librarian-puppet install
+- execute vagrant up
+
 TODO:
 - [x] Add some sort of threshold to prevent apt-get update running unnecessarily during repetitive vagrant provisions.
 - [x] Get augeas working with puppet provisioner

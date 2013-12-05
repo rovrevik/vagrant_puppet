@@ -26,3 +26,27 @@ Steps i did to get librarian-puppet initially working (and need to be better doc
 - gem install puppet
 - librarian-puppet init
 - commit Puppetfile and Puppetfile.lock, .gitignore
+
+(RVM Best Practices)[http://rvm.io/rvm/best-practices]
+https://rvm.io/workflow
+
+Create gemset.
+- rvm install 1.9.3
+- rvm use 1.9.3
+- rvm gemset create vagrant_puppet
+- create ruby switch script. (preferably .ruby-version)
+  - rvm --ruby-version use 1.9.3@vagrant_puppet
+  - rvm --create use 1.9.3@vagrant_puppet --rvmrc
+
+Remembering how do the ruby version switch scripts work: 
+https://rvm.io/rvm/install
+The install hooks into cd with stuff added to .profile.
+
+I had always used .rvmrc files in the past. This time I am going to move to recommended .ruby-version and .ruby-gemset. I found that the .ruby-gemset was not taking effect only the .ruby-version. The .ruby-gemset started to function in a fresh shell/
+
+Add puppet and librarian gems to gem file.
+
+Using RVM for the project is long overdue. The ruby version should correspond to the puppet embedded ruby version of executing on the guest or vagrant embedded version running on the host?
+- The ruby version on the guest puppet (as of this moment) is 1.9.3p392
+- The ruby version on the host vagrant (as of this moment) is 1.9.3p448
+Running a sensible 1.9.3 should be fine.
