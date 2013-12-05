@@ -21,6 +21,8 @@ TODO:
 - [ ] Reconcile default manifest file default.pp versus site.pp default.pp is the puppet.rb file while site.rb is the default generate file name.
 - [ ] Rename the augeas_requirements.pp file to something for more general preconditions.
 - [x] Extract apt-get with threshold and default threshold to class and hiera
+- [ ] Puppet provisioning scripts seem to take a very long time to run (like 20 minutes sometimes).
+- [ ] Extract provisioning commentary into separate meaning markdown files.
 
 TODO: Update manifests to conform to examples in the [puppet style guide](http://docs.puppetlabs.com/guides/style_guide.html).
 - [x] Update all puppet strings to be single quoted if they don't need interpolation
@@ -57,11 +59,12 @@ Good discussion different ways to manage puppet modules.
 
 librarian-puppet is awesome but it has some weight associated with it over using git submodules. librarian-puppet takes over the modules directory so local modules need to be stored somewhere else in the directory structure. The upstream librarian was (still?) not maintained and a fork from maelstrom has gained traction. To incorporate librarian-puppet, the librarian-puppet-maelstrom and puppet gems are required. When the dependencies are added, you need look at stepping it up and integrate rvm gemsets and bundler Gemfiles. 
 
-Module repositories:
-- [maestrodev/librarian-puppet (fork)](https://github.com/maestrodev/librarian-puppet)
-- [rodjek/librarian-puppet](https://github.com/rodjek/librarian-puppet)
+Interesting repositories aimed at simplifying vagrant and puppet manifest management.
+- [maestrodev / librarian-puppet (fork)](https://github.com/maestrodev/librarian-puppet)
+- [rodjek / librarian-puppet](https://github.com/rodjek/librarian-puppet)
+- [narkisr / opskeleton](https://github.com/narkisr/opskeleton)
 
-Steps i did:
+Steps i did to get librarian-puppet initially working (and need to be better document):
 - gem install librarian-puppet-maestrodev
 - gem install puppet
 - librarian-puppet init
@@ -70,4 +73,9 @@ Steps i did:
 TODO:
 - [ ] set up rvm gemset
 - [ ] set up bundler Gemfile
-- [ ] Install mysql puppet module.
+- [x] Install mysql puppet module (via librarian-puppet).
+- [x] Mysql listen on all interfaces
+- [ ] Mysql databases created with inodb by default? This is hard coded now and should be more flexible.
+
+- [x] allow mysql root user access on all interfaces? Decided to go with removing most default accounts and adding a alternate root account with a nonstandard name.
+- [x] add a single development user and database with full access for application schema creation?

@@ -146,7 +146,7 @@ augeas { tomcat_users_11_20_2013:
     'set tomcat-users/user[last()]/#attribute/roles manager-gui,admin-gui,manager',
   ],
   notify  => Service[tomcat7],
-  require => replace_matching_line[rewrite_tomcat_users_xml_decl],
+  require => Replace_matching_line[rewrite_tomcat_users_xml_decl],
 }
 
 # apply these changes with what strategy? 
@@ -212,7 +212,7 @@ augeas { tomcat7_server_https_connector:
     'set Connector[last()]/#attribute/sslProtocol TLS',
   ],
   notify  => Service[tomcat7],
-  require => replace_matching_line[rewrite_server_xml_decl],
+  require => Replace_matching_line[rewrite_server_xml_decl],
 }
 
 if hiera('tomcat_privileged_ports') {
@@ -239,7 +239,7 @@ if hiera('tomcat_privileged_ports') {
     ],
     notify  => Service[tomcat7],
     require => [
-      replace_matching_line[rewrite_server_xml_decl],
+      Replace_matching_line[rewrite_server_xml_decl],
       Augeas[tomcat7_server_https_connector]
     ]
   }
@@ -282,17 +282,58 @@ replace_matching_line { rewrite_server_xml_decl:
 
 # Install mysql and supporting tools sufficient for development
 # puppetlabs/mysql: https://forge.puppetlabs.com/puppetlabs/mysql
+# puppetlabs/puppetlabs-mysql repository: https://github.com/puppetlabs/puppetlabs-mysql
 # This link is way outdated: http://puppetlabs.com/blog/module-of-the-week-puppetlabs-mysql-mysql-management
 # The mysql/tests/ files are also out of date.
 
 if hiera('mysql_install') {
+  $alt_root_username = hiera('mysql_alt_root_username')
+  $dev_name = hiera('mysql_dev_name')
   class { 'mysql::server':
     package_name  => hiera('mysql_package'),
     root_password => hiera('mysql_root_password'),
+    remove_default_accounts => hiera('mysql_remove_default_accounts'),
     override_options => {
       mysqld => {
-        bind_address => hiera('mysql_bind_address')
+        bind_address => hiera('mysql_bind_address'),
+        'default-storage-engine' => innodb,
       }
+    },
+
+    # http://dev.mysql.com/doc/refman/5.5/en/user-names.html
+    # http://dev.mysql.com/doc/refman/5.5/en/default-privileges.html
+    # http://dev.mysql.com/doc/refman/5.5/en/connection-access.html
+    users => {
+      "$alt_root_username@%" => {
+        ensure        => present,
+        password_hash => mysql_password(hiera('mysql_alt_root_password')),
+      },
+      "$dev_name@%" => {
+        ensure        => present,
+        password_hash => mysql_password(hiera('mysql_dev_password')),
+      },
+    },
+    databases => {
+      "$dev_name" => {
+        ensure  => present,
+        charset => 'utf8',
+      },
+    },
+    grants => {
+      "$alt_root_username@%" => {
+        ensure     => present,
+        options    => ['GRANT'],
+        privileges => ['ALL'],
+        table      => '*.*',
+        user       => "$alt_root_username@%",
+      },
+      "$dev_name@%/$dev_name" => {
+        ensure     => present,
+        options    => ['GRANT'],
+        privileges => ['ALL'],
+        table      => "$dev_name.*",
+        user       => "$dev_name@%",
+      },
     },
   }
 }

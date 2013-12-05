@@ -12,7 +12,14 @@
 
   mysql_install: true
   # This is populated with a sensible default and thus not necessary. But, we really, really want mysql 5.5.
-  mysql_package: mysql-server-5.5 
+  mysql_package: mysql-server-5.5
+  mysql_remove_default_accounts: true
   mysql_root_password: s3cret
   mysql_bind_address: 0.0.0.0
+  # An alternate root account
+  mysql_alt_root_username: admin
+  mysql_alt_root_password: s3cret
+  # An initial development account with uninhibited access to it database
+  mysql_dev_name: development
+  mysql_dev_password: s3cret
 ---
