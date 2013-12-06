@@ -102,6 +102,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.provision :puppet do |puppet|
     puppet.manifests_path = 'manifests'
     puppet.manifest_file  = 'site.pp'
+    puppet.module_path = "modules"
 
     # How do hiera values get exposed to puppet? It looks like all the hiera values get looked up before the manifest
     # is executed. Just having an empty hiera.yaml file will case hiera to look for data sources in the /var/lib/hiera.
